@@ -1,1 +1,124 @@
-Hello World!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate the name of your next idea</title>
+    <!-- Bootstrap Dark CSS and Icons -->
+    <link href="https://bootswatch.com/5/darkly/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="p-5 bg-dark text-light">
+    <div class="container">
+        <h1 class="mb-4">Generate the name of your next idea</h1>
+        
+        <div class="mb-3">
+            <label for="keywords" class="form-label">Keywords:</label>
+            <input type="text" class="form-control" id="keywords" placeholder="data,tech,code,nexa,prime,nova">
+        </div>
+        
+        <div class="mb-3">
+            <label for="prefixes" class="form-label">Prefixes:</label>
+            <input type="text" class="form-control" id="prefixes" placeholder="pro,ultra,mega,neo,evo,alpha">
+        </div>
+        
+        <div class="mb-3">
+            <label for="suffixes" class="form-label">Suffixes:</label>
+            <input type="text" class="form-control" id="suffixes" placeholder="hub,zone,net,labs,works,techs">
+        </div>
+        
+        <button class="btn btn-primary mb-3" onclick="generateAndDisplay()">Generate</button>
+        
+        <h3 id="generatedNameTitle" style="display: none;">Your generated name:</h3>
+        <div class="d-flex align-items-center mb-3">
+            <h1 id="projectName" style="display: none; font-size: 3.5rem; background-color: #333; color: #fff; border: 3px solid #17a2b8; padding: 15px 25px; border-radius: 15px; box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3); margin-right: 10px;"></h1>
+            <button id="copyButton" style="display: none;" class="btn btn-secondary" onclick="copyToClipboard()"><i class="bi bi-clipboard"></i></button>
+        </div>
+    </div>
+
+    <!-- JavaScript for Project Name Generator -->
+    <script>
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function applyCasingStyle(name) {
+            const styles = ["camel", "lower", "new_word", "weird"];
+            const chosenStyle = getRandomElement(styles);
+            
+            switch(chosenStyle) {
+                case "camel":
+                    return name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+                case "lower":
+                    return name.toLowerCase();
+                case "new_word":
+                    return name.slice(0, 3) + name.slice(-3);
+                case "weird":
+                    return name.replace(/[aeiouAEIOU]/g, '').split('').sort(() => 0.5 - Math.random()).join('');
+                default:
+                    return name;
+            }
+        }
+
+        function generateProjectName(keywords, prefixes, suffixes, numberRange = 99) {
+            let keyword = getRandomElement(keywords);
+            if (Math.random() > 0.5) {
+                keyword += getRandomElement(keywords);
+            }
+            
+            const decision = getRandomElement(['prefix', 'suffix', 'both']);
+            let name;
+            switch(decision) {
+                case 'prefix':
+                    name = getRandomElement(prefixes) + keyword;
+                    break;
+                case 'suffix':
+                    name = keyword + getRandomElement(suffixes);
+                    break;
+                default:
+                    name = getRandomElement(prefixes) + keyword + getRandomElement(suffixes);
+            }
+            
+            if (Math.random() > 0.5) {
+                const randNum = Math.floor(Math.random() * numberRange).toString().padStart(2, '0');
+                name += randNum;
+            }
+            
+            name = applyCasingStyle(name);
+            
+            if (Math.random() > 0.5) {
+                name = name.replace(/a/g, '-');
+            }
+            if (Math.random() > 0.5) {
+                name = name.replace(/e/g, '_');
+            }
+            
+            return name;
+        }
+
+        function generateAndDisplay() {
+            const keywords = document.getElementById('keywords').value.split(',');
+            const prefixes = document.getElementById('prefixes').value.split(',');
+            const suffixes = document.getElementById('suffixes').value.split(',');
+            
+            const name = generateProjectName(keywords, prefixes, suffixes);
+            document.getElementById('projectName').innerText = name;
+            document.getElementById('projectName').style.display = "block";
+            document.getElementById('generatedNameTitle').style.display = "block";
+            document.getElementById('copyButton').style.display = "block";
+        }
+
+        function copyToClipboard() {
+            const el = document.createElement('textarea');
+            el.value = document.getElementById('projectName').innerText;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
