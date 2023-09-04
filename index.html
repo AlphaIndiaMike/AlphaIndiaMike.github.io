@@ -7,6 +7,17 @@
     <!-- Bootstrap Dark CSS and Icons -->
     <link href="https://bootswatch.com/5/darkly/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+
+
+
+
     <style>
         .invalid-input {
             border-color: red;
@@ -29,11 +40,58 @@
             opacity: 0;
             transition: opacity 0.5s;
         }
+
+        #errorBox {
+            background-color: #ffcccc; /* Light red background */
+            border: 1px solid red;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: none; /* Initially hidden */
+            transition: opacity 0.5s;
+            color: #800000; /* Dark red text color for better readability */
+        }
+
+        #copyFeedback {
+            display: none;
+            color: green;
+            margin-left: 10px;
+        }
+
+        .big-text {
+        font-family: 'Lobster', cursive;
+        font-size: 4.5rem;
+        color: #FFD700;  /* Golden yellow color for emphasis */
+        }
+        .title-text {
+            font-family: 'Roboto Slab', serif;
+            color: #FFD700;  /* Golden yellow color for the entire title */
+        }
+
+        .linkedin-link {
+        color: inherit; /* Inherits the footer's text color */
+        text-decoration: underline; /* Underline to indicate it's a link */
+        transition: color 0.3s ease; /* Smooth transition for hover effect */
+        }
+
+        .linkedin-link:hover, .linkedin-link:focus {
+            color: #17a2b8; /* Color change on hover/focus to indicate interactivity */
+        }
+
+        .linkedin-link:visited {
+            color: inherit; /* Keeps the visited link color consistent with the footer's text color */
+        }
     </style>
 </head>
 <body class="p-5 bg-dark text-light">
     <div class="container">
-        <h1 class="mb-4">Generate the name of your next idea</h1>
+        <h1 class="mb-4 title-text">
+            Generate the name of your next 
+            <span class="big-text">
+                BIG
+            </span> 
+            idea 💡🚀
+        </h1>
         
         <div class="mb-3">
             <label for="keywords" class="form-label">Keywords:</label>
@@ -50,22 +108,46 @@
             <input type="text" class="form-control" id="suffixes" placeholder="hub,zone,net,labs,works,techs">
         </div>
         
-        <div id="errorMessage" style="color: red; margin-bottom: 10px;"></div>
+        <div id="errorBox">
+            <span id="errorMessage"></span>
+        </div>
         
         <button class="btn btn-primary mb-3" onclick="generateAndDisplay()">Generate</button>
         
         <h3 id="generatedNameTitle" style="display: none;">Your generated name:</h3>
         <div class="d-flex align-items-center mb-3">
             <h1 id="projectName" style="display: none; font-size: 3.5rem; background-color: #333; color: #fff; border: 3px solid #17a2b8; padding: 15px 25px; border-radius: 15px; box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3); margin-right: 10px;"></h1>
-            <button id="copyButton" style="display: none;" class="btn btn-secondary" onclick="copyToClipboard()"><i class="bi bi-clipboard"></i></button>
+            <button id="copyButton" style="display: none;" class="btn btn-secondary" onclick="copyToClipboard()" aria-label="Copy generated name to clipboard"><i class="bi bi-clipboard"></i></button>
+        </div>
+
+        <!-- Copy Confirmation Modal -->
+        <div class="modal fade" id="copyModal" tabindex="-1" aria-labelledby="copyModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content" style="background-color: #28a745; color: white;">
+                <div class="modal-body text-center">
+                Name copied to clipboard!
+                </div>
+            </div>
+            </div>
         </div>
     </div>
+    <footer class="footer mt-auto py-3 bg-dark text-light">
+        <div class="container text-center">
+            <span>© <a href="https://www.linkedin.com/in/alex-matei/" target="_blank" class="linkedin-link">2023 AlphaIndiaMike</a>. Version: 1.0.3</span>
+        </div>
+    </footer>
+    
 
     <!-- JavaScript for Project Name Generator -->
     <script>
+        function randomChoice(probability = 0.5) {
+            return Math.random() < probability;
+        }
+
         function getRandomElement(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
+
 
         function applyCasingStyle(name) {
             const styles = ["camel", "lower", "new_word", "weird"];
@@ -85,23 +167,26 @@
             }
         }
 
+
         function generateProjectName(keywords, prefixes, suffixes, numberRange = 99) {
             let keyword = getRandomElement(keywords);
             if (Math.random() > 0.5) {
                 keyword += getRandomElement(keywords);
             }
             
+            let name = keyword; // Start with the keyword
+
+            // Decide whether to add a prefix, suffix, or both
             const decision = getRandomElement(['prefix', 'suffix', 'both']);
-            let name;
             switch(decision) {
                 case 'prefix':
-                    name = getRandomElement(prefixes) + keyword;
+                    name = getRandomElement(prefixes) + name; // Prefix is added before the keyword
                     break;
                 case 'suffix':
-                    name = keyword + getRandomElement(suffixes);
+                    name = name + getRandomElement(suffixes); // Suffix is added after the keyword
                     break;
                 default:
-                    name = getRandomElement(prefixes) + keyword + getRandomElement(suffixes);
+                    name = getRandomElement(prefixes) + name + getRandomElement(suffixes); // Both prefix and suffix are added
             }
             
             if (Math.random() > 0.5) {
@@ -121,6 +206,7 @@
             return name;
         }
 
+
         function generateAndDisplay() {
             const keywordsInput = document.getElementById('keywords');
             const prefixesInput = document.getElementById('prefixes');
@@ -131,24 +217,28 @@
             keywordsInput.classList.remove('invalid-input');
             prefixesInput.classList.remove('invalid-input');
             suffixesInput.classList.remove('invalid-input');
+            document.getElementById('errorBox').style.display = 'none'; // Hide the error box initially
             errorMessage.style.opacity = '0';
             
             // Validate inputs
-            if ((!/^(?:\w+(?:,\w+)*)?$/.test(keywordsInput.value.trim())) || keywordsInput.value.length < 3) {
+            if (keywordsInput.value.trim() === "" || (!/^(?:\w+(?:,\w+)*)?$/.test(keywordsInput.value.trim())) || keywordsInput.value.length < 3) {
                 keywordsInput.classList.add('invalid-input');
-                errorMessage.innerText = 'Invalid format for keywords. Please provide comma-separated words.';
+                errorMessage.innerHTML = 'Invalid format for <b>Keywords</b>. Please provide comma-separated words.';
+                document.getElementById('errorBox').style.display = 'block'; // Show the error box
                 errorMessage.style.opacity = '1';
                 return;
             }
-            if ((!/^(?:\w+(?:,\w+)*)?$/.test(prefixesInput.value.trim()) && prefixesInput.value.trim() !== " ") || prefixesInput.value.length < 1) {
+            if (prefixesInput.value.trim() !== "" && (!/^(?:\w+(?:,\w+)*)?$/.test(prefixesInput.value.trim()))) {
                 prefixesInput.classList.add('invalid-input');
-                errorMessage.innerText = 'Invalid format for prefixes. Please provide comma-separated words or leave it empty.';
+                errorMessage.innerHTML = 'Invalid format for <b>Prefixes</b>. Please provide comma-separated words or leave it empty.';
+                document.getElementById('errorBox').style.display = 'block'; // Show the error box
                 errorMessage.style.opacity = '1';
                 return;
             }
-            if ((!/^(?:\w+(?:,\w+)*)?$/.test(suffixesInput.value.trim()) && suffixesInput.value.trim() !== " ") || suffixesInput.value.length < 1) {
+            if (suffixesInput.value.trim() !== "" && (!/^(?:\w+(?:,\w+)*)?$/.test(suffixesInput.value.trim()))) {
                 suffixesInput.classList.add('invalid-input');
-                errorMessage.innerText = 'Invalid format for suffixes. Please provide comma-separated words or leave it empty.';
+                errorMessage.innerHTML = 'Invalid format for <b>Suffixes</b>. Please provide comma-separated words or leave it empty.';
+                document.getElementById('errorBox').style.display = 'block'; // Show the error box
                 errorMessage.style.opacity = '1';
                 return;
             }
@@ -171,6 +261,17 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
+
+            // Trigger the modal after copying
+            const copyModal = new bootstrap.Modal(document.getElementById('copyModal'), {
+                backdrop: false // This will prevent the modal from closing when clicking outside
+            });
+            copyModal.show();
+
+            // Automatically hide the modal after 2 seconds
+            setTimeout(() => {
+                copyModal.hide();
+            }, 2000);
         }
     </script>
 
