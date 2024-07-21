@@ -1,0 +1,3 @@
+[submodule "lv_js"]
+	path = lv_js
+	url = git@github.com:AlphaIndiaMike/LinkViewJS.git
