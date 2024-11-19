@@ -1,89 +1,200 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Commodore 64 Simulation</title>
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    body {
-      background-color: #0000AA; /* Classic C64 blue */
-      color: #FFFFFF; /* White text */
-      font-family: "Courier New", Courier, monospace; /* Monospaced font */
-      margin: 0;
-      padding: 20px;
-    }
-    .output {
-      white-space: pre-wrap; /* Preserves line breaks */
-      font-size: 16px;
-    }
-    input {
-      background-color: #0000AA;
-      color: #FFFFFF;
-      border: none;
-      outline: none;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 16px;
-      width: 100%;
-    }
-  </style>
+    <title>https://alphaindiamike.github.io/</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c64-border-color: #6A5ACD;      /* Border color */
+            --c64-text-area-color: #0000AA;   /* Text area color */
+            --c64-text-color: #6A5ACD;        /* Text color */
+            --c64-link-hover-color: #FFFF00;  /* Yellow for hover */
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--c64-border-color);
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #screen {
+            width: 94vw;
+            height: 94vh;
+            margin: 3vh auto;
+            background-color: var(--c64-text-area-color);
+            padding: 1vh;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .link {
+            color:yellowgreen;
+        }
+        .output {
+            color: var(--c64-text-color);
+            font-family: 'Press Start 2P', 'Courier New', Courier, monospace;
+            font-size: 16px;
+            margin: 0;
+            line-height: 1.2;
+            white-space: pre;
+        }
+        .input-line {
+            position: relative;
+            display: flex;
+            color: var(--c64-text-color);
+            font-family: 'Press Start 2P', 'Courier New', Courier, monospace;
+            font-size: 16px;
+            align-items: center;
+        }
+        .prompt {
+            margin-right: 5px;
+        }
+        #input {
+            caret-color: transparent;
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--c64-text-color);
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            flex: 1;
+        }
+        .cursor {
+            position: absolute;
+            font-family: 'Press Start 2P', 'Courier New', Courier, monospace;
+            font-size: 16px;
+            color: var(--c64-text-color);
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-  <div id="screen">
-    <div class="output" id="output"></div>
-    <input type="text" id="input" autofocus>
-  </div>
+    <div id="screen">
+        <div class="output" style="text-align: center;"> **** COMMODORE 64 BASIC V2 ****</div>
+        <div class="output">&nbsp;</div>
+        <div class="output" style="text-align: center;">  64K RAM SYSTEM  38911 BASIC BYTES FREE</div>
+        <div class="output">&nbsp;</div>
+        <div class="output">LIST https://alphaindiamike.github.io/</div>
+        <div class="input-line">
+            <input type="text" id="input" autofocus autocomplete="off" spellcheck="false">
+            <span class="cursor">█</span>
+        </div>
+    </div>
 
-  <script>
-    const links = [
-      { text: "Page 1", href: "page1.html" },
-      { text: "Page 2", href: "page2.html" },
-      { text: "Page 3", href: "page3.html" }
-    ];
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var screen = $('#screen');
+            var input = $('#input');
+            var cursor = $('.cursor');
+            var commandHistory = [];
+            var historyIndex = -1;
 
-    const commands = {
-      "LIST": function() {
-        let output = "";
-        links.forEach(link => {
-          output += `${link.text}  <a href="${link.href}" target="_blank" style="color: cyan;">${link.href}</a>\n`;
+            var program = [
+                {line: 10, code: 'PRINT "LINK: NAME GENERATOR"', link: 'https://alphaindiamike.github.io/name_gen/index.html'},
+                {line: 20, code: 'PRINT "LINK: STM32F7 Memory View"', link: 'https://alphaindiamike.github.io/lv_js/LinkViewJS/index.html'},
+                {line: 30, code: 'PRINT "LINK: STM32F7 CMAKE Scope"', link: '#3'}
+            ];
+
+            // Automatically run the LIST command on page load
+            processCommand('LIST https://alphaindiamike.github.io/');
+
+            // Bind input events for command execution and cursor positioning
+            bindInputEvents();
+
+            function bindInputEvents() {
+                input.on('input', function () {
+                    updateCursor();
+                });
+
+                input.on('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        var command = input.val().trim().toUpperCase();
+                        commandHistory.push(command);
+                        historyIndex = commandHistory.length;
+                        $('.input-line').before('<div class="output">' + command + '</div>');
+                        input.val('');
+                        processCommand(command);
+                        e.preventDefault();
+                        updateCursor();
+                    } else if (e.key === 'ArrowUp') {
+                        if (historyIndex > 0) {
+                            historyIndex--;
+                            input.val(commandHistory[historyIndex]);
+                            input.trigger('input');  // update the cursor position
+                        }
+                        e.preventDefault();
+                    } else if (e.key === 'ArrowDown') {
+                        if (historyIndex < commandHistory.length - 1) {
+                            historyIndex++;
+                            input.val(commandHistory[historyIndex]);
+                            input.trigger('input');  // update the cursor position
+                        } else {
+                            historyIndex = commandHistory.length;
+                            input.val('');
+                            input.trigger('input');  // update the cursor position
+                        }
+                        e.preventDefault();
+                    }
+                });
+
+                input.trigger('input'); // Initialize cursor position
+            }
+
+            function updateCursor() {
+                var textLength = input.val().length;
+                var cursorPosition = `calc(${ textLength * 16}px)`; // Adjust to match character width
+                cursor.css('left', cursorPosition);
+            }
+
+            function processCommand(cmd) {
+                if (cmd === 'LIST https://alphaindiamike.github.io/') {
+                    listProgram();
+                } else if (cmd === 'LIST') {
+                    listProgram();
+                } else if (cmd === 'CLEAR') {
+                    screen.html('');
+                    screen.append('<div class="output">&nbsp;</div>'); 
+                    screen.append('<div class="output">READY.</div>');
+                    screen.append('<div class="input-line"><input type="text" id="input" autofocus autocomplete="off" spellcheck="false"><span class="cursor">█</span></div>');
+                    input = $('#input');
+                    cursor = $('.cursor');
+                    bindInputEvents();
+                    input.focus();  // focus the new input field
+                    input.trigger('input');  // update the cursor position
+                } else {
+                    $('.input-line').before('<div class="output">&nbsp;</div>');
+                    $('.input-line').before('<div class="output">?SYNTAX  ERROR</div>');
+                    $('.input-line').before('<div class="output"></div>');
+                    $('.input-line').before('<div class="output">READY.</div>');
+                }
+                screen.scrollTop(screen[0].scrollHeight);
+            }
+
+            function listProgram() {
+                $('.input-line').before('<div class="output">&nbsp;</div>');
+                for (var i = 0; i < program.length; i++) {
+                    var line = program[i];
+                    var codeWithLink = line.code.replace(/"(.*?)"/g, function(match, p1) {
+                        return '"<a href="'+ line.link +'" class="link" target="_blank">' + p1 + '</a>"';
+                    });
+                    $('.input-line').before('<div class="output">' + line.line + ' ' + codeWithLink + '</div>');
+                }
+                $('.input-line').before('<div class="output">&nbsp;</div>');
+                $('.input-line').before('<div class="output">READY.</div>');
+            }
+
+            $(window).on('focus', function() {
+                // Update the input and cursor references in case they have changed
+                input = $('#input');
+                cursor = $('.cursor');
+                // Focus the input field
+                input.focus();
+                // Update the cursor position
+                input.trigger('input');
+            });
         });
-        return output;
-      },
-      "CLEAR": function() {
-        $("#output").empty();
-        return "";
-      }
-    };
-
-    $(document).ready(function() {
-      const input = $("#input");
-      const output = $("#output");
-
-      function appendToOutput(text) {
-        output.append(text + "\n");
-      }
-
-      input.on("keypress", function(e) {
-        if (e.key === "Enter") {
-          const command = input.val().trim().toUpperCase();
-          input.val(""); // Clear input
-          appendToOutput(`\nREADY.\n> ${command}`);
-
-          if (commands[command]) {
-            appendToOutput(commands[command]());
-          } else {
-            appendToOutput("?SYNTAX ERROR\n");
-          }
-
-          // Scroll to bottom of output
-          $("#screen").scrollTop($("#screen")[0].scrollHeight);
-        }
-      });
-
-      // Initial prompt
-      appendToOutput("READY.\n");
-    });
-  </script>
+    </script>
 </body>
 </html>
