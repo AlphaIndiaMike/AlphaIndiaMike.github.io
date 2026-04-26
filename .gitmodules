@@ -1,3 +1,6 @@
 [submodule "lv_js"]
 	path = lv_js
 	url = git@github.com:AlphaIndiaMike/LinkViewJS.git
+[submodule "qxv1"]
+	path = qxv1
+	url = git@github.com:AlphaIndiaMike/quantaloxv1.git
