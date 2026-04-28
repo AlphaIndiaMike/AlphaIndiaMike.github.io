@@ -4,3 +4,6 @@
 [submodule "qxv1"]
 	path = qxv1
 	url = git@github.com:AlphaIndiaMike/quantaloxv1.git
+[submodule "rms"]
+	path = rms
+	url = git@github.com:AlphaIndiaMike/rm-stack.git
