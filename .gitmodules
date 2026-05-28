@@ -7,3 +7,6 @@
 [submodule "fsmcu"]
 	path = fsmcu
 	url = git@github.com:AlphaIndiaMike/fsmcu.git
+[submodule "fs"]
+	path = fs
+	url = git@github.com:AlphaIndiaMike/fas.git
